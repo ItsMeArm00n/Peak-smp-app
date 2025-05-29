@@ -1,983 +1,1568 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ItsMeArm00n - Peak SMP Application</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ItsMeArm00n - Peak SMP Application</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        :root {
-            --primary-green: #00ff88;
-            --primary-blue: #00d4ff;
-            --primary-purple: #8b5cf6;
-            --primary-gold: #ffd700;
-            --dark-bg: #0a0a0a;
-            --dark-secondary: #1a1a1a;
-            --dark-tertiary: #2a2a2a;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --gradient-primary: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
-            --gradient-secondary: linear-gradient(135deg, var(--primary-purple), var(--primary-gold));
-        }
+    :root {
+        --primary-green: #00ff88;
+        --primary-blue: #00d4ff;
+        --primary-purple: #8b5cf6;
+        --primary-gold: #ffd700;
+        --dark-bg: #0a0a0a;
+        --dark-secondary: #1a1a1a;
+        --dark-tertiary: #2a2a2a;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --gradient-primary: linear-gradient(135deg, var(--primary-green), var(--primary-blue));
+        --gradient-secondary: linear-gradient(135deg, var(--primary-purple), var(--primary-gold));
+    }
 
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--dark-bg);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background: var(--dark-bg);
+        color: var(--text-primary);
+        overflow-x: hidden;
+        line-height: 1.6;
+    }
 
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark-bg);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            transition: opacity 0.5s ease;
-        }
+    /* Loading Screen */
+    .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--dark-bg);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        transition: opacity 0.5s ease;
+    }
 
-        .loading-screen.hidden {
+    .loading-screen.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .minecraft-loader {
+        width: 60px;
+        height: 60px;
+        background: var(--gradient-primary);
+        animation: minecraft-spin 1.5s infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes minecraft-spin {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.2); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .loading-text {
+        font-family: 'Orbitron', monospace;
+        font-size: 1.2rem;
+        color: var(--primary-green);
+        animation: pulse 2s infinite;
+    }
+
+    /* Music Visualizer */
+    .visualizer-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        pointer-events: none;
+        z-index: 1;
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        gap: 2px;
+        padding: 0 20px;
+        opacity: 0.3;
+    }
+
+    .visualizer-bar {
+        width: 4px;
+        background: var(--gradient-primary);
+        border-radius: 2px 2px 0 0;
+        transition: height 0.1s ease;
+        min-height: 5px;
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+
+    .visualizer-bar:nth-child(even) {
+        background: var(--gradient-secondary);
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    }
+
+    /* Floating Music Notes */
+    .music-note {
+        position: fixed;
+        font-size: 20px;
+        color: var(--primary-green);
+        pointer-events: none;
+        z-index: 10;
+        animation: float-note 4s linear infinite;
+        opacity: 0;
+    }
+
+    @keyframes float-note {
+        0% {
             opacity: 0;
-            pointer-events: none;
+            transform: translateY(100vh) rotate(0deg);
         }
-
-        .minecraft-loader {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-primary);
-            animation: minecraft-spin 1.5s infinite;
-            margin-bottom: 20px;
+        10% {
+            opacity: 1;
         }
-
-        @keyframes minecraft-spin {
-            0% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
+        90% {
+            opacity: 1;
         }
-
-        .loading-text {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
-            color: var(--primary-green);
-            animation: pulse 2s infinite;
+        100% {
+            opacity: 0;
+            transform: translateY(-100px) rotate(360deg);
         }
+    }
 
-        /* Navigation */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 0;
-            transition: all 0.3s ease;
-        }
+    /* Navigation */
+    .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+        padding: 1rem 0;
+        transition: all 0.3s ease;
+    }
 
-        .navbar.scrolled {
-            background: rgba(10, 10, 10, 0.98);
-            box-shadow: 0 2px 20px rgba(0, 255, 136, 0.1);
-        }
+    .navbar.scrolled {
+        background: rgba(10, 10, 10, 0.98);
+        box-shadow: 0 2px 20px rgba(0, 255, 136, 0.1);
+    }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-        }
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+    }
 
-        .logo {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
-            font-weight: 900;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    .logo {
+        font-family: 'Orbitron', monospace;
+        font-size: 1.5rem;
+        font-weight: 900;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: logo-pulse 3s ease-in-out infinite;
+    }
 
+    @keyframes logo-pulse {
+        0%, 100% { filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.3)); }
+        50% { filter: drop-shadow(0 0 15px rgba(0, 255, 136, 0.8)); }
+    }
+
+    .nav-links {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+    }
+
+    .nav-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .nav-links a:hover {
+        color: var(--primary-green);
+        transform: translateY(-2px);
+    }
+
+    .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--gradient-primary);
+        transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover::after {
+        width: 100%;
+    }
+
+    /* Audio Controls */
+    .audio-controls {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 1000;
+    }
+
+    .audio-btn {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        animation: audio-btn-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes audio-btn-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .audio-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+    }
+
+    .audio-btn.playing {
+        animation: audio-btn-playing 1s ease-in-out infinite;
+    }
+
+    @keyframes audio-btn-playing {
+        0%, 100% { box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3); }
+        50% { box-shadow: 0 8px 25px rgba(0, 255, 136, 0.8); }
+    }
+
+    .volume-slider {
+        width: 50px;
+        height: 150px;
+        background: rgba(26, 26, 26, 0.9);
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    .volume-slider.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+    }
+
+    .volume-slider input {
+        writing-mode: bt-lr;
+        -webkit-appearance: slider-vertical;
+        width: 30px;
+        height: 120px;
+        background: var(--gradient-primary);
+        outline: none;
+    }
+
+    /* Particle Controls */
+    .particle-controls {
+        position: fixed;
+        bottom: 2rem;
+        left: 2rem;
+        background: rgba(26, 26, 26, 0.9);
+        border-radius: 10px;
+        padding: 1rem;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .particle-controls label {
+        color: var(--text-primary);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .particle-controls input {
+        width: 150px;
+    }
+
+    .particle-count-value {
+        background: var(--dark-tertiary);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    /* Particle Background */
+    .particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* Hero Section */
+    .hero {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: radial-gradient(ellipse at center, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
+    }
+
+    .hero-content {
+        text-align: center;
+        max-width: 800px;
+        padding: 0 2rem;
+    }
+
+    .hero-title {
+        font-family: 'Orbitron', monospace;
+        font-size: clamp(3rem, 8vw, 6rem);
+        font-weight: 900;
+        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: glow-text 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow-text {
+        from { filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5)); }
+        to { filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.8)); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        animation: subtitle-float 4s ease-in-out infinite;
+    }
+
+    @keyframes subtitle-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .minecraft-card {
+        background: rgba(26, 26, 26, 0.8);
+        border: 2px solid var(--dark-tertiary);
+        border-radius: 10px;
+        padding: 2rem;
+        margin: 2rem 0;
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        animation: card-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes card-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.1); }
+        50% { box-shadow: 0 0 30px rgba(0, 255, 136, 0.3); }
+    }
+
+    .minecraft-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+        animation: scan 3s infinite;
+    }
+
+    @keyframes scan {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .typewriter {
+        font-size: 1.2rem;
+        color: var(--primary-green);
+        border-right: 2px solid var(--primary-green);
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 50% { border-color: var(--primary-green); }
+        51%, 100% { border-color: transparent; }
+    }
+
+    /* Sections */
+    .section {
+        padding: 5rem 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .section-title {
+        font-family: 'Orbitron', monospace;
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 3rem;
+        background: var(--gradient-secondary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: title-bounce 3s ease-in-out infinite;
+    }
+
+    @keyframes title-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+
+    /* Skills Grid */
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .skill-card {
+        background: var(--dark-secondary);
+        border: 1px solid var(--dark-tertiary);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        animation: card-float 6s ease-in-out infinite;
+    }
+
+    @keyframes card-float {
+        0%, 100% { transform: translateY(0) rotateY(0deg); }
+        50% { transform: translateY(-5px) rotateY(2deg); }
+    }
+
+    .skill-card:nth-child(even) {
+        animation-delay: -3s;
+    }
+
+    .skill-card:hover {
+        transform: translateY(-10px) scale(1.05);
+        border-color: var(--primary-green);
+        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    }
+
+    .skill-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: icon-spin 8s linear infinite;
+    }
+
+    @keyframes icon-spin {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(360deg); }
+    }
+
+    .skill-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .skill-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Progress Bars */
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--dark-tertiary);
+        border-radius: 4px;
+        margin: 1rem 0;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--gradient-primary);
+        border-radius: 4px;
+        transition: width 2s ease;
+        width: 0;
+        animation: progress-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes progress-glow {
+        0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.3); }
+        50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.8); }
+    }
+
+    /* Achievements */
+    .achievements-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .achievement-card {
+        background: var(--dark-secondary);
+        border: 1px solid var(--dark-tertiary);
+        border-radius: 10px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        animation: achievement-glow 5s ease-in-out infinite;
+    }
+
+    @keyframes achievement-glow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+    }
+
+    .achievement-card:hover {
+        border-color: var(--primary-gold);
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
+        transform: translateY(-5px) rotateX(5deg);
+    }
+
+    .achievement-icon {
+        font-size: 2rem;
+        color: var(--primary-gold);
+        margin-bottom: 1rem;
+        animation: achievement-icon-bounce 3s ease-in-out infinite;
+    }
+
+    @keyframes achievement-icon-bounce {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-3px) rotate(5deg); }
+    }
+
+    .achievement-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .achievement-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    /* Tooltip System */
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--dark-bg);
+        border: 2px solid var(--primary-green);
+        border-radius: 5px;
+        padding: 1rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        animation: tooltip-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes tooltip-pulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.3); }
+        50% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+    }
+
+    .tooltip-container:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 8px solid transparent;
+        border-top-color: var(--primary-green);
+    }
+
+    /* Why Belong Grid */
+    .belong-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .belong-item {
+        background: var(--dark-secondary);
+        border: 1px solid var(--dark-tertiary);
+        border-radius: 10px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        animation: belong-wave 4s ease-in-out infinite;
+    }
+
+    @keyframes belong-wave {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(2px); }
+        75% { transform: translateX(-2px); }
+    }
+
+    .belong-item:nth-child(odd) {
+        animation-delay: -2s;
+    }
+
+    .belong-item:hover {
+        border-color: var(--primary-blue);
+        transform: scale(1.05) rotateZ(1deg);
+        box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+    }
+
+    .belong-emoji {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+        animation: emoji-bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes emoji-bounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    /* Contact Section */
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .contact-item {
+        background: var(--dark-secondary);
+        border: 1px solid var(--dark-tertiary);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        animation: contact-float 5s ease-in-out infinite;
+    }
+
+    @keyframes contact-float {
+        0%, 100% { transform: translateY(0) rotateX(0deg); }
+        50% { transform: translateY(-3px) rotateX(2deg); }
+    }
+
+    .contact-item:nth-child(even) {
+        animation-delay: -2.5s;
+    }
+
+    .contact-item:hover {
+        border-color: var(--primary-purple);
+        transform: translateY(-5px) scale(1.05);
+    }
+
+    .contact-icon {
+        font-size: 2rem;
+        color: var(--primary-purple);
+        margin-bottom: 1rem;
+        animation: contact-icon-spin 6s linear infinite;
+    }
+
+    @keyframes contact-icon-spin {
+        0% { transform: rotateY(0deg); }
+        100% { transform: rotateY(360deg); }
+    }
+
+    /* Footer */
+    .footer {
+        background: var(--dark-secondary);
+        border-top: 1px solid var(--dark-tertiary);
+        padding: 3rem 0;
+        text-align: center;
+    }
+
+    .team-flair-logo {
+        width: 60px;
+        height: 60px;
+        background: var(--gradient-secondary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-family: 'Orbitron', monospace;
+        font-weight: 900;
+        font-size: 1.5rem;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotateZ(0deg); }
+        50% { transform: translateY(-10px) rotateZ(5deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
         .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-green);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-primary);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        /* Audio Controls */
-        .audio-controls {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            display: flex;
-            gap: 1rem;
-            z-index: 1000;
-        }
-
-        .audio-btn {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-        }
-
-        .audio-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-        }
-
-        /* Particle Background */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background: radial-gradient(ellipse at center, rgba(0, 255, 136, 0.1) 0%, transparent 70%);
-        }
-
-        .hero-content {
-            text-align: center;
-            max-width: 800px;
-            padding: 0 2rem;
+            display: none;
         }
 
         .hero-title {
-            font-family: 'Orbitron', monospace;
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: glow-text 3s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow-text {
-            from { filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5)); }
-            to { filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.8)); }
-        }
-
-        .hero-subtitle {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .minecraft-card {
-            background: rgba(26, 26, 26, 0.8);
-            border: 2px solid var(--dark-tertiary);
-            border-radius: 10px;
-            padding: 2rem;
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .minecraft-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
-            animation: scan 3s infinite;
-        }
-
-        @keyframes scan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        .typewriter {
-            font-size: 1.2rem;
-            color: var(--primary-green);
-            border-right: 2px solid var(--primary-green);
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 50% { border-color: var(--primary-green); }
-            51%, 100% { border-color: transparent; }
-        }
-
-        /* Sections */
-        .section {
-            padding: 5rem 0;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-left: 2rem;
-            padding-right: 2rem;
-        }
-
-        .section-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 3rem;
-            background: var(--gradient-secondary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Skills Grid */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .skill-card {
-            background: var(--dark-secondary);
-            border: 1px solid var(--dark-tertiary);
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skill-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary-green);
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
-        }
-
-        .skill-icon {
             font-size: 3rem;
-            margin-bottom: 1rem;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
-        .skill-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
+        .section {
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
 
-        .skill-description {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* Progress Bars */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--dark-tertiary);
-            border-radius: 4px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--gradient-primary);
-            border-radius: 4px;
-            transition: width 2s ease;
-            width: 0;
-        }
-
-        /* Achievements */
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .achievement-card {
-            background: var(--dark-secondary);
-            border: 1px solid var(--dark-tertiary);
-            border-radius: 10px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .achievement-card:hover {
-            border-color: var(--primary-gold);
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.2);
-        }
-
-        .achievement-icon {
-            font-size: 2rem;
-            color: var(--primary-gold);
-            margin-bottom: 1rem;
-        }
-
-        .achievement-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .achievement-description {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* Tooltip System */
-        .tooltip-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--dark-bg);
-            border: 2px solid var(--primary-green);
-            border-radius: 5px;
-            padding: 1rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .tooltip-container:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(-10px);
-        }
-
-        .tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-top-color: var(--primary-green);
-        }
-
-        /* Why Belong Grid */
-        .belong-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        .belong-item {
-            background: var(--dark-secondary);
-            border: 1px solid var(--dark-tertiary);
-            border-radius: 10px;
-            padding: 1.5rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .belong-item:hover {
-            border-color: var(--primary-blue);
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
-        }
-
-        .belong-emoji {
-            font-size: 1.5rem;
-            margin-right: 0.5rem;
-        }
-
-        /* Contact Section */
+        .skills-grid,
+        .achievements-grid,
+        .belong-grid,
         .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
+            grid-template-columns: 1fr;
         }
 
-        .contact-item {
-            background: var(--dark-secondary);
-            border: 1px solid var(--dark-tertiary);
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
+        .visualizer-container {
+            height: 100px;
         }
 
-        .contact-item:hover {
-            border-color: var(--primary-purple);
-            transform: translateY(-5px);
+        .audio-controls {
+            bottom: 1rem;
+            right: 1rem;
         }
-
-        .contact-icon {
-            font-size: 2rem;
-            color: var(--primary-purple);
-            margin-bottom: 1rem;
+        
+        .particle-controls {
+            bottom: 1rem;
+            left: 1rem;
         }
+    }
 
-        /* Footer */
-        .footer {
-            background: var(--dark-secondary);
-            border-top: 1px solid var(--dark-tertiary);
-            padding: 3rem 0;
-            text-align: center;
-        }
+    /* Scroll Animations */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
 
-        .team-flair-logo {
-            width: 60px;
-            height: 60px;
-            background: var(--gradient-secondary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-family: 'Orbitron', monospace;
-            font-weight: 900;
-            font-size: 1.5rem;
-            animation: float 3s ease-in-out infinite;
-        }
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
+    ::-webkit-scrollbar-track {
+        background: var(--dark-secondary);
+    }
 
-            .hero-title {
-                font-size: 3rem;
-            }
+    ::-webkit-scrollbar-thumb {
+        background: var(--gradient-primary);
+        border-radius: 4px;
+    }
 
-            .section {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-green);
+    }
 
-            .skills-grid,
-            .achievements-grid,
-            .belong-grid,
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    /* Auto-play notification */
+    .autoplay-notification {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(26, 26, 26, 0.95);
+        border: 2px solid var(--primary-green);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        z-index: 10001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
 
-        /* Scroll Animations */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease;
-        }
+    .autoplay-notification.visible {
+        opacity: 1;
+        visibility: visible;
+    }
 
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .autoplay-btn {
+        background: var(--gradient-primary);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--dark-secondary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--gradient-primary);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-green);
-        }
-    </style>
+    .autoplay-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+    }
+</style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="minecraft-loader"></div>
-        <div class="loading-text">Loading Peak SMP Application...</div>
+<!-- Loading Screen -->
+<div class="loading-screen" id="loadingScreen">
+    <div class="minecraft-loader"></div>
+    <div class="loading-text">Loading Peak SMP Application...</div>
+</div>
+
+<!-- Auto-play Notification -->
+<div class="autoplay-notification" id="autoplayNotification">
+    <h3>🎵 Enable Background Music?</h3>
+    <p>Click to start the immersive audio experience!</p>
+    <button class="autoplay-btn" id="enableAudioBtn">Enable Audio</button>
+</div>
+
+<!-- Audio -->
+<audio id="backgroundMusic" loop crossorigin="anonymous">
+    <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Tears-Ob29sQA4s01PiV0Cnl906vpCEzCQxW.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Navigation -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <div class="logo">ItsMeArm00n</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#achievements">Achievements</a></li>
+            <li><a href="#why-smp">Why SMP</a></li>
+            <li><a href="#why-belong">Why I Belong</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
     </div>
+</nav>
 
-    <!-- Audio -->
-    <audio id="backgroundMusic" loop>
-        <source src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Tears-Ob29sQA4s01PiV0Cnl906vpCEzCQxW.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <div class="logo">ItsMeArm00n</div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#achievements">Achievements</a></li>
-                <li><a href="#why-smp">Why SMP</a></li>
-                <li><a href="#why-belong">Why I Belong</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Audio Controls -->
-    <div class="audio-controls">
-        <button class="audio-btn" id="playBtn" title="Play/Pause Music">
-            <i class="fas fa-play" id="playIcon"></i>
-        </button>
-        <button class="audio-btn" id="muteBtn" title="Mute/Unmute">
-            <i class="fas fa-volume-up" id="muteIcon"></i>
-        </button>
+<!-- Audio Controls -->
+<div class="audio-controls">
+    <div class="volume-slider" id="volumeSlider">
+        <input type="range" id="volumeControl" min="0" max="100" value="50" orient="vertical">
     </div>
+    <button class="audio-btn" id="volumeBtn" title="Volume Control">
+        <i class="fas fa-volume-up" id="volumeIcon"></i>
+    </button>
+    <button class="audio-btn" id="playBtn" title="Play/Pause Music">
+        <i class="fas fa-play" id="playIcon"></i>
+    </button>
+</div>
 
-    <!-- Particle Background -->
-    <canvas class="particles" id="particles"></canvas>
+<!-- Particle Controls -->
+<div class="particle-controls">
+    <label>
+        Particles: <span id="particleCountValue" class="particle-count-value">80</span>
+        <input type="range" id="particleCountSlider" min="20" max="200" value="80">
+    </label>
+</div>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-content">
-            <h1 class="hero-title">ItsMeArm00n</h1>
-            <p class="hero-subtitle">Peak SMP Application</p>
-            <div class="minecraft-card">
-                <div class="typewriter" id="typewriter"></div>
-            </div>
-        </div>
-    </section>
+<!-- Music Visualizer -->
+<div class="visualizer-container" id="visualizer"></div>
 
-    <!-- About Section -->
-    <section class="section fade-in" id="about">
-        <h2 class="section-title">About Me</h2>
+<!-- Particle Background -->
+<canvas class="particles" id="particles"></canvas>
+
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h1 class="hero-title">ItsMeArm00n</h1>
+        <p class="hero-subtitle">Peak SMP Application</p>
         <div class="minecraft-card">
-            <p style="font-size: 1.1rem; text-align: center; color: var(--text-secondary);">
-                Welcome to my Peak SMP application! I'm a dedicated Minecraft player with a passion for building, 
-                collaboration, and creating memorable experiences. I believe in following rules, contributing positively 
-                to the community, and bringing creative energy to every project.
-            </p>
+            <div class="typewriter" id="typewriter"></div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Skills Section -->
-    <section class="section fade-in" id="skills">
-        <h2 class="section-title">My Minecraft Skills</h2>
-        <div class="skills-grid">
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-hammer"></i></div>
-                <h3 class="skill-title">Building & Architecture</h3>
-                <p class="skill-description">Expert in creating stunning structures, from medieval castles to modern skyscrapers</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="95"></div>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-seedling"></i></div>
-                <h3 class="skill-title">Farm Engineering</h3>
-                <p class="skill-description">Designing efficient automated farms for maximum resource production</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="98"></div>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-users"></i></div>
-                <h3 class="skill-title">Team Collaboration</h3>
-                <p class="skill-description">Working effectively with others on large-scale community projects</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="92"></div>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-cogs"></i></div>
-                <h3 class="skill-title">Redstone Engineering</h3>
-                <p class="skill-description">Creating complex redstone contraptions and automated systems</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="88"></div>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-map"></i></div>
-                <h3 class="skill-title">Exploration & Mining</h3>
-                <p class="skill-description">Efficient resource gathering and world exploration strategies</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="90"></div>
-                </div>
-            </div>
-            <div class="skill-card">
-                <div class="skill-icon"><i class="fas fa-shield-alt"></i></div>
-                <h3 class="skill-title">Server Management</h3>
-                <p class="skill-description">Understanding server rules, community guidelines, and conflict resolution</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" data-width="96"></div>
-                </div>
+<!-- About Section -->
+<section class="section fade-in" id="about">
+    <h2 class="section-title">About Me</h2>
+    <div class="minecraft-card">
+        <p style="font-size: 1.1rem; text-align: center; color: var(--text-secondary);">
+            Welcome to my Peak SMP application! I'm a dedicated Minecraft player with a passion for building, 
+            collaboration, and creating memorable experiences. I believe in following rules, contributing positively 
+            to the community, and bringing creative energy to every project.
+        </p>
+    </div>
+</section>
+
+<!-- Skills Section -->
+<section class="section fade-in" id="skills">
+    <h2 class="section-title">My Minecraft Skills</h2>
+    <div class="skills-grid">
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-hammer"></i></div>
+            <h3 class="skill-title">Building & Architecture</h3>
+            <p class="skill-description">Expert in creating stunning structures, from medieval castles to modern skyscrapers</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="95"></div>
             </div>
         </div>
-    </section>
-
-    <!-- Achievements Section -->
-    <section class="section fade-in" id="achievements">
-        <h2 class="section-title">My Achievements</h2>
-        <div class="achievements-grid">
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-trophy"></i></div>
-                <h3 class="achievement-title">Master Builder</h3>
-                <p class="achievement-description">Completed over 50 major building projects across multiple servers</p>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-crown"></i></div>
-                <h3 class="achievement-title">Team Flair Contributor</h3>
-                <p class="achievement-description">Active member and contributor to Team Flair community projects</p>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-medal"></i></div>
-                <h3 class="achievement-title">Farm Architect</h3>
-                <p class="achievement-description">Designed the most efficient farms on previous servers</p>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-star"></i></div>
-                <h3 class="achievement-title">Community Leader</h3>
-                <p class="achievement-description">Helped organize and lead multiple community events and projects</p>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-clock"></i></div>
-                <h3 class="achievement-title">Dedicated Player</h3>
-                <p class="achievement-description">Over 2000 hours of Minecraft gameplay with consistent activity</p>
-            </div>
-            <div class="achievement-card">
-                <div class="achievement-icon"><i class="fas fa-handshake"></i></div>
-                <h3 class="achievement-title">Reliable Member</h3>
-                <p class="achievement-description">Zero rule violations and excellent reputation across all servers</p>
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-seedling"></i></div>
+            <h3 class="skill-title">Farm Engineering</h3>
+            <p class="skill-description">Designing efficient automated farms for maximum resource production</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="98"></div>
             </div>
         </div>
-    </section>
-
-    <!-- Why I Play SMP Section -->
-    <section class="section fade-in" id="why-smp">
-        <h2 class="section-title">Why I Play SMP</h2>
-        <div class="minecraft-card">
-            <p style="font-size: 1.2rem; text-align: center; line-height: 1.8;">
-                I'm a loyal, rule-following player who loves building cool stuff, grinding, and collaborating with others. 
-                I'm not just active — I bring ideas, humor, and energy to the server! SMP servers represent the best of 
-                Minecraft: community, creativity, and shared experiences. I thrive in environments where I can contribute 
-                to something bigger than myself while forming lasting friendships with fellow players.
-            </p>
-        </div>
-    </section>
-
-    <!-- Why I Belong Here Section -->
-    <section class="section fade-in" id="why-belong">
-        <h2 class="section-title">Why I Belong Here</h2>
-        <div class="belong-grid">
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">✅</span> Follow rules
-                <div class="tooltip">I always respect server rules and create a positive environment</div>
-            </div>
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">✅</span> No ghosting
-                <div class="tooltip">I'm reliable and communicate when I'll be away</div>
-            </div>
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">💡</span> Active contributor to Team Flair
-                <div class="tooltip">I actively contribute ideas and support to the team</div>
-            </div>
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">🎮</span> Daily Minecraft sessions (with breaks when needed)
-                <div class="tooltip">I'm consistently active but maintain a healthy balance</div>
-            </div>
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">🧠</span> Best farm builder
-                <div class="tooltip">I design efficient, creative farms that benefit everyone</div>
-            </div>
-            <div class="belong-item tooltip-container">
-                <span class="belong-emoji">🐐</span> 2nd goat
-                <div class="tooltip">I may not be the GOAT, but I'm pretty close!</div>
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-users"></i></div>
+            <h3 class="skill-title">Team Collaboration</h3>
+            <p class="skill-description">Working effectively with others on large-scale community projects</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="92"></div>
             </div>
         </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="section fade-in" id="contact">
-        <h2 class="section-title">Get In Touch</h2>
-        <div class="contact-grid">
-            <div class="contact-item">
-                <div class="contact-icon"><i class="fab fa-discord"></i></div>
-                <h3>Discord</h3>
-                <p>6198233090891448354</p>
-            </div>
-            <div class="contact-item">
-                <div class="contact-icon"><i class="fas fa-gamepad"></i></div>
-                <h3>Minecraft IGN</h3>
-                <p>ItsMeArm00n</p>
-            </div>
-            <div class="contact-item">
-                <div class="contact-icon"><i class="fas fa-clock"></i></div>
-                <h3>Timezone</h3>
-                <p>Available Daily</p>
-            </div>
-            <div class="contact-item">
-                <div class="contact-icon"><i class="fas fa-users"></i></div>
-                <h3>Team Flair</h3>
-                <p>Active Member</p>
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-cogs"></i></div>
+            <h3 class="skill-title">Redstone Engineering</h3>
+            <p class="skill-description">Creating complex redstone contraptions and automated systems</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="88"></div>
             </div>
         </div>
-    </section>
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-map"></i></div>
+            <h3 class="skill-title">Exploration & Mining</h3>
+            <p class="skill-description">Efficient resource gathering and world exploration strategies</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="90"></div>
+            </div>
+        </div>
+        <div class="skill-card">
+            <div class="skill-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3 class="skill-title">Server Management</h3>
+            <p class="skill-description">Understanding server rules, community guidelines, and conflict resolution</p>
+            <div class="progress-bar">
+                <div class="progress-fill" data-width="96"></div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="team-flair-logo">TF</div>
-        <p>Made by <strong style="color: var(--primary-green);">ItsMeArm00n</strong></p>
-        <p style="color: var(--text-secondary); margin-top: 0.5rem;">Team Flair • Peak SMP Application 2024</p>
-    </footer>
+<!-- Achievements Section -->
+<section class="section fade-in" id="achievements">
+    <h2 class="section-title">My Achievements</h2>
+    <div class="achievements-grid">
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-trophy"></i></div>
+            <h3 class="achievement-title">Master Builder</h3>
+            <p class="achievement-description">Completed over 50 major building projects across multiple servers</p>
+        </div>
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-crown"></i></div>
+            <h3 class="achievement-title">Team Flair Contributor</h3>
+            <p class="achievement-description">Active member and contributor to Team Flair community projects</p>
+        </div>
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-medal"></i></div>
+            <h3 class="achievement-title">Farm Architect</h3>
+            <p class="achievement-description">Designed the most efficient farms on previous servers</p>
+        </div>
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-star"></i></div>
+            <h3 class="achievement-title">Community Leader</h3>
+            <p class="achievement-description">Helped organize and lead multiple community events and projects</p>
+        </div>
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-clock"></i></div>
+            <h3 class="achievement-title">Dedicated Player</h3>
+            <p class="achievement-description">Over 2000 hours of Minecraft gameplay with consistent activity</p>
+        </div>
+        <div class="achievement-card">
+            <div class="achievement-icon"><i class="fas fa-handshake"></i></div>
+            <h3 class="achievement-title">Reliable Member</h3>
+            <p class="achievement-description">Zero rule violations and excellent reputation across all servers</p>
+        </div>
+    </div>
+</section>
 
-    <script>
-        // Loading Screen
-        window.addEventListener('load', () => {
+<!-- Why I Play SMP Section -->
+<section class="section fade-in" id="why-smp">
+    <h2 class="section-title">Why I Play SMP</h2>
+    <div class="minecraft-card">
+        <p style="font-size: 1.2rem; text-align: center; line-height: 1.8;">
+            I'm a loyal, rule-following player who loves building cool stuff, grinding, and collaborating with others. 
+            I'm not just active — I bring ideas, humor, and energy to the server! SMP servers represent the best of 
+            Minecraft: community, creativity, and shared experiences. I thrive in environments where I can contribute 
+            to something bigger than myself while forming lasting friendships with fellow players.
+        </p>
+    </div>
+</section>
+
+<!-- Why I Belong Here Section -->
+<section class="section fade-in" id="why-belong">
+    <h2 class="section-title">Why I Belong Here</h2>
+    <div class="belong-grid">
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">✅</span> Follow rules
+            <div class="tooltip">I always respect server rules and create a positive environment</div>
+        </div>
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">✅</span> No ghosting
+            <div class="tooltip">I'm reliable and communicate when I'll be away</div>
+        </div>
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">💡</span> Active contributor to Team Flair
+            <div class="tooltip">I actively contribute ideas and support to the team</div>
+        </div>
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">🎮</span> Daily Minecraft sessions (with breaks when needed)
+            <div class="tooltip">I'm consistently active but maintain a healthy balance</div>
+        </div>
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">🧠</span> Best farm builder
+            <div class="tooltip">I design efficient, creative farms that benefit everyone</div>
+        </div>
+        <div class="belong-item tooltip-container">
+            <span class="belong-emoji">🐐</span> 2nd goat
+            <div class="tooltip">I may not be the GOAT, but I'm pretty close!</div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="section fade-in" id="contact">
+    <h2 class="section-title">Get In Touch</h2>
+    <div class="contact-grid">
+        <div class="contact-item">
+            <div class="contact-icon"><i class="fab fa-discord"></i></div>
+            <h3>Discord</h3>
+            <p>6198233090891448354</p>
+        </div>
+        <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-gamepad"></i></div>
+            <h3>Minecraft IGN</h3>
+            <p>ItsMeArm00n</p>
+        </div>
+        <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-clock"></i></div>
+            <h3>Timezone</h3>
+            <p>Available Daily</p>
+        </div>
+        <div class="contact-item">
+            <div class="contact-icon"><i class="fas fa-users"></i></div>
+            <h3>Team Flair</h3>
+            <p>Active Member</p>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="team-flair-logo">TF</div>
+    <p>Made by <strong style="color: var(--primary-green);">ItsMeArm00n</strong></p>
+    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Team Flair • Peak SMP Application 2024</p>
+</footer>
+
+<script>
+    // Audio Context and Analyzer
+    let audioContext;
+    let analyser;
+    let dataArray;
+    let source;
+    let isAudioInitialized = false;
+
+    // Loading Screen
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            // Show auto-play notification after loading
             setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 2000);
-        });
+                document.getElementById('autoplayNotification').classList.add('visible');
+            }, 500);
+        }, 2000);
+    });
 
-        // Navbar Scroll Effect
-        window.addEventListener('scroll', () => {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
+    // Initialize Audio Context
+    function initializeAudio() {
+        if (isAudioInitialized) return;
+        
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            
+            const audio = document.getElementById('backgroundMusic');
+            source = audioContext.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            isAudioInitialized = true;
+            
+            // Create visualizer bars
+            createVisualizer();
+            
+            // Start audio visualization
+            visualizeAudio();
+            
+            console.log('Audio context initialized successfully');
+        } catch (error) {
+            console.error('Error initializing audio context:', error);
+        }
+    }
+
+    // Create Visualizer Bars
+    function createVisualizer() {
+        const visualizer = document.getElementById('visualizer');
+        visualizer.innerHTML = '';
+        
+        const barCount = 64;
+        for (let i = 0; i < barCount; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'visualizer-bar';
+            bar.style.height = '5px';
+            visualizer.appendChild(bar);
+        }
+    }
+
+    // Audio Visualization
+    function visualizeAudio() {
+        if (!analyser || !dataArray) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        const bars = document.querySelectorAll('.visualizer-bar');
+        
+        bars.forEach((bar, index) => {
+            const value = dataArray[index] || 0;
+            const height = Math.max(5, (value / 255) * 120);
+            bar.style.height = height + 'px';
+            
+            // Add color variation based on frequency
+            if (value > 200) {
+                bar.style.background = 'var(--gradient-secondary)';
+                bar.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.8)';
+            } else if (value > 100) {
+                bar.style.background = 'var(--gradient-primary)';
+                bar.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.5)';
             } else {
-                navbar.classList.remove('scrolled');
+                bar.style.background = 'var(--gradient-primary)';
+                bar.style.boxShadow = '0 0 5px rgba(0, 255, 136, 0.3)';
             }
         });
+        
+        // Update particle system with audio data
+        updateParticlesWithAudio(dataArray);
+        
+        requestAnimationFrame(visualizeAudio);
+    }
 
-        // Smooth Scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+    // Floating Music Notes
+    function createMusicNote() {
+        const notes = ['♪', '♫', '♬', '♩', '♭', '♯'];
+        const note = document.createElement('div');
+        note.className = 'music-note';
+        note.textContent = notes[Math.floor(Math.random() * notes.length)];
+        note.style.left = Math.random() * window.innerWidth + 'px';
+        note.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+        document.body.appendChild(note);
+        
+        setTimeout(() => {
+            note.remove();
+        }, 4000);
+    }
 
-        // Audio Controls
+    // Auto-play handling
+    document.getElementById('enableAudioBtn').addEventListener('click', () => {
         const audio = document.getElementById('backgroundMusic');
-        const playBtn = document.getElementById('playBtn');
-        const muteBtn = document.getElementById('muteBtn');
-        const playIcon = document.getElementById('playIcon');
-        const muteIcon = document.getElementById('muteIcon');
+        const notification = document.getElementById('autoplayNotification');
+        
+        initializeAudio();
+        
+        audio.play().then(() => {
+            notification.classList.remove('visible');
+            document.getElementById('playIcon').className = 'fas fa-pause';
+            document.getElementById('playBtn').classList.add('playing');
+            isPlaying = true;
+            
+            // Start creating music notes
+            setInterval(createMusicNote, 2000);
+        }).catch(e => {
+            console.log('Audio play failed:', e);
+            notification.classList.remove('visible');
+        });
+    });
 
-        let isPlaying = false;
-        let isMuted = false;
+    // Navbar Scroll Effect
+    window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > 100) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
 
-        playBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                audio.pause();
-                playIcon.className = 'fas fa-play';
-                isPlaying = false;
-            } else {
-                audio.play().catch(e => console.log('Audio play failed:', e));
-                playIcon.className = 'fas fa-pause';
-                isPlaying = true;
+    // Smooth Scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
             }
         });
+    });
 
-        muteBtn.addEventListener('click', () => {
-            if (isMuted) {
-                audio.muted = false;
-                muteIcon.className = 'fas fa-volume-up';
-                isMuted = false;
-            } else {
-                audio.muted = true;
-                muteIcon.className = 'fas fa-volume-mute';
-                isMuted = true;
-            }
-        });
+    // Audio Controls
+    const audio = document.getElementById('backgroundMusic');
+    const playBtn = document.getElementById('playBtn');
+    const volumeBtn = document.getElementById('volumeBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeControl = document.getElementById('volumeControl');
+    const playIcon = document.getElementById('playIcon');
+    const volumeIcon = document.getElementById('volumeIcon');
 
-        // Typewriter Effect
-        const typewriterText = "Hey there! I'm ItsMeArm00n and this is my application for Peak SMP";
-        const typewriterElement = document.getElementById('typewriter');
-        let i = 0;
+    let isPlaying = false;
+    let showVolumeSlider = false;
 
-        function typeWriter() {
-            if (i < typewriterText.length) {
-                typewriterElement.innerHTML = typewriterText.substring(0, i + 1);
-                i++;
-                setTimeout(typeWriter, 50);
-            }
+    // Play/Pause functionality
+    playBtn.addEventListener('click', () => {
+        if (!isAudioInitialized) {
+            initializeAudio();
         }
-
-        setTimeout(typeWriter, 3000);
-
-        // Particle System
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        
+        if (isPlaying) {
+            audio.pause();
+            playIcon.className = 'fas fa-play';
+            playBtn.classList.remove('playing');
+            isPlaying = false;
+        } else {
+            audio.play().catch(e => console.log('Audio play failed:', e));
+            playIcon.className = 'fas fa-pause';
+            playBtn.classList.add('playing');
+            isPlaying = true;
         }
+    });
 
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+    // Volume control
+    volumeBtn.addEventListener('click', () => {
+        showVolumeSlider = !showVolumeSlider;
+        if (showVolumeSlider) {
+            volumeSlider.classList.add('visible');
+        } else {
+            volumeSlider.classList.remove('visible');
+        }
+    });
 
-        const particles = [];
-        const particleCount = 50;
-        const colors = ['#00ff88', '#00d4ff', '#8b5cf6', '#ffd700'];
+    volumeControl.addEventListener('input', (e) => {
+        const volume = e.target.value / 100;
+        audio.volume = volume;
+        
+        if (volume === 0) {
+            volumeIcon.className = 'fas fa-volume-mute';
+        } else if (volume < 0.5) {
+            volumeIcon.className = 'fas fa-volume-down';
+        } else {
+            volumeIcon.className = 'fas fa-volume-up';
+        }
+    });
 
+    // Set initial volume
+    audio.volume = 0.5;
+
+    // Typewriter Effect
+    const typewriterText = "Hey there! I'm ItsMeArm00n and this is my application for Peak SMP";
+    const typewriterElement = document.getElementById('typewriter');
+    let i = 0;
+
+    function typeWriter() {
+        if (i < typewriterText.length) {
+            typewriterElement.innerHTML = typewriterText.substring(0, i + 1);
+            i++;
+            setTimeout(typeWriter, 50);
+        }
+    }
+
+    setTimeout(typeWriter, 3000);
+
+    // Enhanced Particle System
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Particle system variables
+    let particles = [];
+    let particleCount = 80;
+    const colors = ['#00ff88', '#00d4ff', '#8b5cf6', '#ffd700'];
+
+    // Initialize particles
+    function initParticles() {
+        particles = [];
         for (let i = 0; i < particleCount; i++) {
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                size: Math.random() * 3 + 1,
-                speedX: (Math.random() - 0.5) * 0.5,
-                speedY: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 4 + 1,
+                baseSize: Math.random() * 4 + 1,
+                speedX: (Math.random() - 0.5) * 1,
+                speedY: (Math.random() - 0.5) * 1,
                 color: colors[Math.floor(Math.random() * colors.length)],
-                opacity: Math.random() * 0.5 + 0.2
+                opacity: Math.random() * 0.7 + 0.3
             });
         }
+    }
 
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    initParticles();
 
-            particles.forEach(particle => {
+    // Particle count slider
+    const particleCountSlider = document.getElementById('particleCountSlider');
+    const particleCountValue = document.getElementById('particleCountValue');
+
+    particleCountSlider.addEventListener('input', (e) => {
+        particleCount = parseInt(e.target.value);
+        particleCountValue.textContent = particleCount;
+        initParticles();
+    });
+
+    // Update particles with audio data
+    function updateParticlesWithAudio(audioData) {
+        if (!audioData || !isPlaying) return;
+        
+        // Calculate average frequency for overall intensity
+        const avgFrequency = audioData.reduce((sum, value) => sum + value, 0) / audioData.length;
+        
+        // Process different frequency ranges
+        const bassFreq = audioData.slice(0, 10).reduce((sum, value) => sum + value, 0) / 10;
+        const midFreq = audioData.slice(10, 30).reduce((sum, value) => sum + value, 0) / 20;
+        const trebleFreq = audioData.slice(30).reduce((sum, value) => sum + value, 0) / (audioData.length - 30);
+        
+        particles.forEach((particle, index) => {
+            // Map each particle to a frequency bin
+            const freqIndex = Math.floor((index / particles.length) * audioData.length);
+            const frequency = audioData[freqIndex] || 0;
+            
+            // Size pulsing based on frequency - THIS IS THE MAIN EFFECT
+            const sizeFactor = frequency / 255;
+            particle.size = particle.baseSize + (sizeFactor * 10); // Grow up to 10x size based on frequency
+            
+            // Adjust opacity based on frequency
+            particle.opacity = 0.3 + (sizeFactor * 0.7);
+            
+            // Color changes based on frequency intensity
+            if (frequency > 200) {
+                particle.color = colors[3]; // Gold for high frequencies
+            } else if (frequency > 150) {
+                particle.color = colors[2]; // Purple for mid-high frequencies
+            } else if (frequency > 100) {
+                particle.color = colors[1]; // Blue for mid frequencies
+            } else {
+                particle.color = colors[0]; // Green for low frequencies
+            }
+            
+            // Slight speed adjustments based on bass
+            const speedFactor = 1 + (bassFreq / 255) * 0.5;
+            particle.x += particle.speedX * speedFactor;
+            particle.y += particle.speedY * speedFactor;
+            
+            // Boundary wrapping
+            if (particle.x < 0) particle.x = canvas.width;
+            if (particle.x > canvas.width) particle.x = 0;
+            if (particle.y < 0) particle.y = canvas.height;
+            if (particle.y > canvas.height) particle.y = 0;
+        });
+    }
+
+    // Animate particles
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(particle => {
+            // If no music is playing, move particles normally
+            if (!isPlaying) {
                 particle.x += particle.speedX;
                 particle.y += particle.speedY;
-
+                
+                // Boundary wrapping
                 if (particle.x < 0) particle.x = canvas.width;
                 if (particle.x > canvas.width) particle.x = 0;
                 if (particle.y < 0) particle.y = canvas.height;
                 if (particle.y > canvas.height) particle.y = 0;
+                
+                // Reset to base size when no music
+                particle.size = particle.baseSize;
+            }
 
-                ctx.beginPath();
-                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                ctx.fillStyle = particle.color + Math.floor(particle.opacity * 255).toString(16).padStart(2, '0');
-                ctx.fill();
-            });
-
-            requestAnimationFrame(animateParticles);
-        }
-
-        animateParticles();
-
-        // Scroll Animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    
-                    // Animate progress bars
-                    const progressBars = entry.target.querySelectorAll('.progress-fill');
-                    progressBars.forEach(bar => {
-                        const width = bar.getAttribute('data-width');
-                        setTimeout(() => {
-                            bar.style.width = width + '%';
-                        }, 500);
-                    });
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Add some interactive effects
-        document.querySelectorAll('.skill-card, .achievement-card, .belong-item').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-10px) scale(1.02)';
-            });
+            // Draw particle with glow effect
+            ctx.beginPath();
+            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            ctx.fillStyle = particle.color + Math.floor(particle.opacity * 255).toString(16).padStart(2, '0');
             
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0) scale(1)';
-            });
+            // Add glow effect
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = particle.color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
         });
 
-        // Add click effects
-        document.querySelectorAll('.belong-item').forEach(item => {
-            item.addEventListener('click', () => {
-                item.style.animation = 'none';
-                setTimeout(() => {
-                    item.style.animation = 'pulse 0.5s ease';
-                }, 10);
-            });
+        requestAnimationFrame(animateParticles);
+    }
+
+    animateParticles();
+
+    // Scroll Animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                
+                // Animate progress bars
+                const progressBars = entry.target.querySelectorAll('.progress-fill');
+                progressBars.forEach(bar => {
+                    const width = bar.getAttribute('data-width');
+                    setTimeout(() => {
+                        bar.style.width = width + '%';
+                    }, 500);
+                });
+            }
         });
-    </script>
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
+
+    // Enhanced Interactive Effects
+    document.querySelectorAll('.skill-card, .achievement-card, .belong-item').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-10px) scale(1.02) rotateY(5deg)';
+            card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0) scale(1) rotateY(0deg)';
+        });
+    });
+
+    // Enhanced Click Effects
+    document.querySelectorAll('.belong-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Create ripple effect
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(0, 255, 136, 0.6)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.marginLeft = '-10px';
+            ripple.style.marginTop = '-10px';
+            
+            item.style.position = 'relative';
+            item.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    // Add ripple animation to CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Hide volume slider when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!volumeBtn.contains(e.target) && !volumeSlider.contains(e.target)) {
+            volumeSlider.classList.remove('visible');
+            showVolumeSlider = false;
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            playBtn.click();
+        }
+        if (e.code === 'KeyM') {
+            volumeBtn.click();
+        }
+    });
+</script>
 </body>
 </html>
